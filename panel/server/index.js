@@ -105,7 +105,22 @@ function saveConfig(cfg) {
 
 function loadUsers() {
   if (!fs.existsSync(USERS_FILE)) {
-    const users = { admin: { password: bcrypt.hashSync('admin', 10), role: 'admin' } };
+    // Bootstrap: берём пароль и логин из config.json (записывает install.sh)
+    let initialPassword = 'admin';
+    let initialUsername = 'admin';
+    try {
+      const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+      if (cfg.adminPassword && !cfg.adminPassword.startsWith('$2')) {
+        initialPassword = cfg.adminPassword;
+        // Удаляем plaintext-пароль из config.json после использования
+        delete cfg.adminPassword;
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2));
+      }
+      if (cfg.adminUsername) initialUsername = cfg.adminUsername;
+    } catch (_) {}
+    const users = {
+      [initialUsername]: { password: bcrypt.hashSync(initialPassword, 10), role: 'admin' }
+    };
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), { mode: 0o600 });
     return users;
   }
@@ -225,6 +240,31 @@ app.post('/api/config/change-password', requireAuth, (req, res) => {
   user.password = bcrypt.hashSync(newPassword, 10);
   saveUsers(users);
   res.json({ success: true, message: 'Пароль успешно изменён' });
+});
+
+app.post('/api/config/change-username', requireAuth, (req, res) => {
+  const { newUsername, currentPassword } = req.body || {};
+  if (!newUsername || !currentPassword)
+    return res.json({ success: false, message: 'Заполните все поля' });
+  if (!isValidUsername(newUsername))
+    return res.json({ success: false, message: 'Логин: 1-32 симв. (A-Z, a-z, 0-9, . _ -)' });
+
+  const users = loadUsers();
+  const currentUser = users[req.session.username];
+  if (!currentUser)
+    return res.json({ success: false, message: 'Пользователь не найден' });
+  if (!bcrypt.compareSync(currentPassword, currentUser.password))
+    return res.json({ success: false, message: 'Неверный текущий пароль' });
+  if (newUsername === req.session.username)
+    return res.json({ success: false, message: 'Новый логин совпадает с текущим' });
+  if (users[newUsername])
+    return res.json({ success: false, message: 'Такой логин уже занят' });
+
+  users[newUsername] = { ...currentUser };
+  delete users[req.session.username];
+  saveUsers(users);
+  req.session.destroy(() => {});
+  res.json({ success: true, message: `Логин изменён на "${newUsername}". Войдите снова.` });
 });
 
 // ═══════════════════════════════════════════════════════════

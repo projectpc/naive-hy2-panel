@@ -7,7 +7,7 @@
 #  Требования: Ubuntu 22.04 / 24.04 / Debian 11+ / root / amd64|arm64|armv7
 # ═══════════════════════════════════════════════════════════════════════
 
-set -uo pipefail
+set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 export NEEDRESTART_SUSPEND=1
@@ -156,6 +156,10 @@ echo -e "${BOLD}Параметры прокси:${RESET}"
 echo -e "${YELLOW}  ⚠  Убедитесь что A-запись домена указывает на ${SERVER_IP}${RESET}"
 echo ""
 read -rp "  Домен (например vpn.yourdomain.com): " PROXY_DOMAIN
+if ! [[ "$PROXY_DOMAIN" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+  log_err "Домен содержит недопустимые символы: ${PROXY_DOMAIN}"
+  exit 1
+fi
 read -rp "  Email для Let's Encrypt (TLS): " PROXY_EMAIL
 
 # Проверка что домен панели (если задан) отличается от домена прокси.
@@ -792,6 +796,7 @@ mkdir -p "${PANEL_DIR}/panel/data"
 
 log_ok "Панель загружена в ${PANEL_DIR}"
 
+ADMIN_PASS=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
 # ── Запись начального config.json ────────────────────────────────────
 if [[ ! -f "${PANEL_DIR}/panel/data/config.json" ]]; then
   NAIVE_USERS_JSON="[]"
@@ -823,7 +828,9 @@ if [[ ! -f "${PANEL_DIR}/panel/data/config.json" ]]; then
   "accessMode":  "${ACCESS_MODE}",
   "serverIp": "${SERVER_IP}",
   "arch": "${MACHINE_ARCH}",
-  "adminPassword": "",
+  "adminPassword": "${ADMIN_PASS}",
+  "adminUsername": "admin",
+  "firstLogin": true,
   "naiveUsers": ${NAIVE_USERS_JSON},
   "hy2Users":   ${HY2_USERS_JSON}
 }
@@ -1148,6 +1155,9 @@ echo -e "${PURPLE}${BOLD}╔═════════════════�
 echo -e "${PURPLE}${BOLD}║   ✅  Установка завершена!                                    ║${RESET}"
 echo -e "${PURPLE}${BOLD}╠══════════════════════════════════════════════════════════════╣${RESET}"
 echo -e "${PURPLE}${BOLD}║   🌐  ПАНЕЛЬ УПРАВЛЕНИЯ                                       ║${RESET}"
+
+echo -e "${PURPLE}${BOLD}║   👤  Логин: admin  Пароль: ${ADMIN_PASS}${RESET}"
+echo -e "${PURPLE}${BOLD}║   ⚠  СМЕНИТЕ ЛОГИН И ПАРОЛЬ В НАСТРОЙКАХ!${RESET}"
 
 if [[ "$ACCESS_MODE" == "1" ]]; then
   echo -e "${PURPLE}${BOLD}║   ➜   http://${SERVER_IP}:8080${RESET}"

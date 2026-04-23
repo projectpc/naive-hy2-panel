@@ -864,6 +864,34 @@ async function changePassword() {
   }
 }
 
+async function changeUsername() {
+  const newUsername = document.getElementById('newUsername').value.trim();
+  const pwdForUsername = document.getElementById('pwdForUsername').value;
+  const alertEl = document.getElementById('usernameChangeAlert');
+
+  if (!newUsername || !pwdForUsername) {
+    showAlert(alertEl, 'Заполните все поля', 'error'); return;
+  }
+  if (!/^[A-Za-z0-9_.-]{1,32}$/.test(newUsername)) {
+    showAlert(alertEl, 'Логин: 1-32 символа (A-Z, a-z, 0-9, . _ -)', 'error'); return;
+  }
+  try {
+    const res = await fetch('/api/config/change-username', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newUsername, currentPassword: pwdForUsername })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showAlert(alertEl, '✅ ' + data.message, 'success');
+      setTimeout(() => { window.location.reload(); }, 2000);
+    } else {
+      showAlert(alertEl, data.message || 'Ошибка', 'error');
+    }
+  } catch {
+    showAlert(alertEl, 'Ошибка соединения', 'error');
+  }
+}
+
 // ─── HELPERS ─────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
