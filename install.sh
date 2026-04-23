@@ -3,7 +3,7 @@
 #  Panel Naive + Hysteria2 by RIXXX — Полный установщик
 #  Устанавливает: панель управления + NaiveProxy (Caddy) + Hysteria2
 #  Запуск:
-#    bash <(curl -fsSL https://raw.githubusercontent.com/cwash797-cmd/Panel---Naive-Hy2---by---RIXXX/main/install.sh)
+#    bash <(curl -fsSL https://raw.githubusercontent.com/projectpc/naive-hy2-panel/main/install.sh)
 #  Требования: Ubuntu 22.04 / 24.04 / Debian 11+ / root / amd64|arm64|armv7
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -12,7 +12,7 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 export NEEDRESTART_SUSPEND=1
 
-REPO_URL="https://github.com/cwash797-cmd/Panel---Naive-Hy2---by---RIXXX"
+REPO_URL="https://github.com/projectpc/naive-hy2-panel"
 REPO_BRANCH="${REPO_BRANCH:-main}"
 PANEL_DIR="/opt/panel-naive-hy2"
 SERVICE_NAME="panel-naive-hy2"
