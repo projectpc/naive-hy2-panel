@@ -63,7 +63,7 @@
         </span>
       </button>
     </form>
-    <div class="login-hint">По умолчанию: admin / admin</div>
+    <!-- Убрана подсказка admin/admin — пароль показывается в конце install.sh -->
   </div>
 </div>
 
@@ -157,7 +157,6 @@
         </div>
       </div>
 
-      <!-- Общая инфа -->
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card">
           <div class="stat-icon domain-icon">
@@ -197,7 +196,6 @@
         </div>
       </div>
 
-      <!-- Карточки сервисов -->
       <div class="cards-row">
         <!-- NaiveProxy -->
         <div class="card service-card" id="naiveCard">
@@ -290,7 +288,6 @@
         </div>
       </div>
 
-      <!-- Быстрые ссылки -->
       <div class="card quick-links-card">
         <div class="card-header">
           <h3 class="card-title">Быстрые ссылки подключения</h3>
@@ -310,7 +307,6 @@
         <h1 class="page-title">Установка прокси</h1>
       </div>
 
-      <!-- Tabs -->
       <div class="tabs">
         <button class="tab-btn active" data-tab="naive" onclick="switchInstallTab('naive')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
@@ -335,7 +331,6 @@
           <div class="card-body">
             <div id="installAlert" class="alert hidden"></div>
 
-            <!-- Общие поля -->
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">
@@ -353,7 +348,6 @@
               </div>
             </div>
 
-            <!-- Naive-специфичные поля -->
             <div id="naiveFields" class="form-grid">
               <div class="form-group">
                 <label class="form-label">
@@ -383,7 +377,6 @@
               </div>
             </div>
 
-            <!-- Hy2-специфичные поля -->
             <div id="hy2Fields" class="form-grid hidden">
               <div class="form-group full-width">
                 <label class="form-label">
@@ -419,7 +412,6 @@
           </div>
         </div>
 
-        <!-- Progress Panel -->
         <div class="card install-progress-card">
           <div class="card-header">
             <h3 class="card-title">Прогресс установки</h3>
@@ -531,26 +523,15 @@
           <p style="color:var(--text-secondary);line-height:1.55;margin:6px 0 10px 0">
             Linux по умолчанию настроен под обычный веб-трафик, а не под VPN. Для прокси это означает:
             медленный TCP на больших задержках (NaiveProxy) и потери UDP-пакетов при высоком трафике (Hysteria2).
-            На этой странице <strong>один раз</strong> применяется набор sysctl-параметров, который снимает эти ограничения.
-            Руками менять значения не нужно — они подобраны производителями Hysteria2/Caddy и проверены на практике.
           </p>
           <ul class="tuning-expl">
-            <li><strong>BBR</strong> (<code>net.ipv4.tcp_congestion_control=bbr</code>) — современный алгоритм контроля перегрузок
-              от Google. Даёт <strong>в 2–10 раз больше пропускной способности</strong> на TCP-соединениях с потерями
-              (особенно если клиент далеко от сервера). Заменяет старый cubic. Требует ядро ≥ 4.9 (Ubuntu 20.04+ — OK).</li>
-            <li><strong>fq</strong> (<code>net.core.default_qdisc=fq</code>) — справедливая очередь пакетов,
-              нужна для корректной работы BBR. Без неё BBR работает, но хуже.</li>
-            <li><strong>UDP buffers 16 МБ</strong> (<code>net.core.rmem_max/wmem_max=16777216</code>) —
-              Hysteria2 на высоких скоростях (>100 Mbps) пишет в сокет большими порциями. Дефолтные 212 КБ
-              буфера приводят к потерям и падению скорости в разы. Hysteria <strong>сама предупреждает</strong>
-              об этом при старте, если буфер маленький.</li>
-            <li><strong>TCP Fast Open</strong> (<code>net.ipv4.tcp_fastopen=3</code>) — ускоряет повторные подключения
-              NaiveProxy к тому же серверу (на ~1 RTT быстрее).</li>
-            <li><strong>conntrack 1M</strong> — повышает лимит одновременных соединений (для 100+ пользователей).</li>
+            <li><strong>BBR</strong> — современный алгоритм контроля перегрузок от Google. Даёт в 2–10 раз больше пропускной способности на TCP-соединениях с потерями.</li>
+            <li><strong>fq</strong> — справедливая очередь пакетов, нужна для корректной работы BBR.</li>
+            <li><strong>UDP buffers 16 МБ</strong> — Hysteria2 на высоких скоростях пишет в сокет большими порциями. Дефолтные буферы приводят к потерям.</li>
+            <li><strong>TCP Fast Open</strong> — ускоряет повторные подключения NaiveProxy.</li>
           </ul>
           <p style="color:var(--text-muted);font-size:13px;margin:10px 0 0 0">
-            Параметры сохраняются в <code>/etc/sysctl.d/99-rixxx-tune.conf</code> и применяются мгновенно,
-            а также автоматически после перезагрузки. Откатить: <code>rm /etc/sysctl.d/99-rixxx-tune.conf && sysctl --system</code>.
+            Параметры сохраняются в <code>/etc/sysctl.d/99-rixxx-tune.conf</code> и применяются автоматически после перезагрузки.
           </p>
         </div>
       </div>
@@ -602,10 +583,7 @@
       <div class="card tuning-action-card">
         <div class="card-body">
           <h3 class="tuning-title">Применить оптимизации</h3>
-          <p class="tuning-desc">
-            Установщик уже применил этот тюнинг автоматически. Кнопка нужна, если после установки вы откатывали sysctl,
-            обновляли ядро, или панель показывает что BBR/буферы ниже нормы (серые/красные бейджи сверху).
-          </p>
+          <p class="tuning-desc">Установщик уже применил этот тюнинг автоматически. Кнопка нужна если BBR/буферы показываются как неактивные.</p>
           <div class="form-actions form-actions-center">
             <button class="btn btn-shiny btn-lg" id="applyTuneBtn" onclick="applyTuning()">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -632,19 +610,12 @@
           <h3 style="margin-top:0">Зачем это нужно</h3>
           <p style="color:var(--text-secondary);line-height:1.55;margin:6px 0 10px 0">
             Некоторые сайты (российские банки, госуслуги, маркетплейсы) <strong>блокируют иностранные IP</strong>.
-            Если весь трафик идёт через VPN за рубежом — эти сайты не откроются. Решение — пускать трафик
-            к таким сайтам <strong>напрямую</strong>, минуя VPN. Это называется <em>split tunneling</em> / bypass.
+            Решение — пускать трафик к таким сайтам <strong>напрямую</strong>, минуя VPN.
           </p>
           <ul class="tuning-expl">
-            <li><strong>Hysteria2</strong> (UDP) поддерживает bypass на сервере через ACL — работает автоматически
-              для всех клиентов, настраивать на клиенте ничего не нужно.</li>
-            <li><strong>NaiveProxy</strong> (TCP через Caddy forward_proxy) <u>не поддерживает</u> серверный ACL.
-              Для Naive bypass настраивается только на клиенте (Happ/Karing/v2rayN — все поддерживают).
-              В инструкции ниже даны готовые списки.</li>
+            <li><strong>Hysteria2</strong> (UDP) поддерживает bypass на сервере через ACL — работает автоматически для всех клиентов.</li>
+            <li><strong>NaiveProxy</strong> (TCP) — bypass настраивается только на клиенте (Happ/Karing/v2rayN).</li>
           </ul>
-          <p style="color:var(--text-muted);font-size:13px;margin:10px 0 0 0">
-            После включения bypass применяется мгновенно — Hysteria2 перезапускается с новым ACL.
-          </p>
         </div>
       </div>
 
@@ -675,13 +646,10 @@
       <div class="card" style="margin-top:16px">
         <div class="card-body">
           <h3 class="tuning-title">Загрузить / обновить список</h3>
-          <p class="tuning-desc">
-            Вставьте JSON-файл в формате <code>{"service.ru": ["1.2.3.0/24", ...], ...}</code>
-            или просто массив <code>["1.2.3.0/24", ...]</code>. Поддерживаются IPv4 и IPv6 в CIDR-нотации.
-          </p>
+          <p class="tuning-desc">Вставьте JSON-файл в формате <code>{"service.ru": ["1.2.3.0/24", ...], ...}</code> или просто массив CIDR.</p>
           <div class="form-group">
             <label class="form-label">JSON / список CIDR</label>
-            <textarea id="bypassInput" class="form-input" rows="8" placeholder='{"alfabank.ru":["5.101.37.0/24", ...], "gosuslugi.ru":[...]}' style="font-family:var(--font-mono);font-size:12px"></textarea>
+            <textarea id="bypassInput" class="form-input" rows="8" placeholder='{"alfabank.ru":["5.101.37.0/24", ...]}' style="font-family:var(--font-mono);font-size:12px"></textarea>
             <div class="form-hint">Источник (для заметок)</div>
             <input id="bypassSourceInput" class="form-input" placeholder="например: antifilter.download от 20.04.2026" style="margin-top:6px">
           </div>
@@ -714,11 +682,9 @@
       </div>
 
       <div class="card diag-card">
-        <div class="card-header">
-          <h3 class="card-title">Порты, сервисы и TLS</h3>
-        </div>
+        <div class="card-header"><h3 class="card-title">Порты, сервисы и TLS</h3></div>
         <div class="card-body">
-          <p class="muted">Проверка кто слушает <code>:443</code> по TCP и UDP + статус TLS-сертификата Hy2. Если на UDP/443 висит Caddy — Hy2 не сможет запуститься.</p>
+          <p class="muted">Проверка кто слушает <code>:443</code> по TCP и UDP + статус TLS-сертификата Hy2.</p>
           <pre class="log-box" id="diagPortsBox">Загружаю...</pre>
         </div>
       </div>
@@ -729,7 +695,7 @@
           <button class="btn btn-outline btn-sm" onclick="loadDiagHysteriaConfig()">Показать</button>
         </div>
         <div class="card-body">
-          <p class="muted">Пароли замаскированы как <code>***masked***</code>. Полезно когда Hy2 ведёт себя странно — сразу видно какой masquerade, какой TLS и все ли секции на месте.</p>
+          <p class="muted">Пароли замаскированы как <code>***masked***</code>.</p>
           <pre class="log-box log-box-tall" id="diagHysteriaCfg">— нажмите «Показать» —</pre>
         </div>
       </div>
@@ -740,7 +706,7 @@
           <button class="btn btn-shiny btn-sm" onclick="fixHy2Tls()">Починить</button>
         </div>
         <div class="card-body">
-          <p class="muted">Если Hy2 падает с ошибкой <code>rateLimited</code> / <code>HTTP 429</code> / <code>could not get certificate</code> — значит он пытается получить свой ACME-сертификат, хотя Caddy уже выдал общий. Эта кнопка найдёт фактический cert Caddy (от любого CA: Let's Encrypt / ZeroSSL) и пропишет его в Hy2 конфиг. Потом перезапустит hysteria-server.</p>
+          <p class="muted">Если Hy2 падает с ошибкой <code>rateLimited</code> / <code>HTTP 429</code> — значит он пытается получить свой ACME-сертификат. Эта кнопка найдёт cert Caddy и пропишет его в Hy2.</p>
           <pre class="log-box" id="fixHy2Result" style="margin-top:12px">— нажмите «Починить» —</pre>
         </div>
       </div>
@@ -765,26 +731,6 @@
           </div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-body">
-          <h3 class="diag-help-title">Если Hy2 запущен но клиент не может подключиться:</h3>
-          <ul class="diag-help-list">
-            <li><strong>В логах <code>suppressing panic for copyResponse / H3_GENERAL_PROTOCOL_ERROR / timeout: no recent network activity</code></strong> — это ответы masquerade на запросы клиентов, которые НЕ прошли Hy2-авторизацию. Значит клиент подключается с неверным паролем или неверной ссылкой.</li>
-            <li><strong>Проверьте ссылку</strong>: формат <code>hysteria2://PASSWORD@DOMAIN:443?sni=DOMAIN#name</code>. Для userpass-auth пароль = <code>username:password</code>.</li>
-            <li><strong>Cert невалиден</strong> — клиент не принимает cert Caddy. В диагностике выше проверьте что cert-файл существует и доступен (<code>perms 644</code>).</li>
-            <li><strong>Файрволл провайдера</strong> блокирует UDP/443 на стороне клиента — попробуйте мобильный интернет или VPN через другой регион.</li>
-          </ul>
-
-          <h3 class="diag-help-title" style="margin-top:20px">Если Hy2 вообще не запускается:</h3>
-          <ul class="diag-help-list">
-            <li><strong>UDP/443 занят Caddy</strong> (HTTP/3). Решение: в <code>/etc/caddy/Caddyfile</code> в глобальном блоке <code>{}</code> должно быть <code>servers { protocols h1 h2 }</code>, потом <code>systemctl reload caddy &amp;&amp; systemctl restart hysteria-server</code>.</li>
-            <li><strong>Нет TLS-сертификата</strong>. Caddy выдаёт его при первом обращении — убедитесь что A-запись домена указывает на этот сервер и порт 80 доступен снаружи.</li>
-            <li><strong>Бинарник для другой архитектуры</strong> — посмотрите в Дашборде.</li>
-            <li><strong>UFW</strong> блокирует UDP/443 — выполните: <code>ufw allow 443/udp &amp;&amp; ufw reload</code>.</li>
-          </ul>
-        </div>
-      </div>
     </div>
 
     <!-- ────── SETTINGS PAGE ────── -->
@@ -792,10 +738,18 @@
       <div class="page-header">
         <h1 class="page-title">Настройки</h1>
       </div>
+
+      <!-- ⚠ Баннер первого входа — скрыт по умолчанию, показывается из app.js -->
+      <div id="firstLoginBanner" class="alert alert-error hidden" style="margin-bottom:20px;font-size:15px;">
+        ⚠️ <strong>Смените логин и пароль прямо сейчас!</strong>
+        Вы вошли с автоматически сгенерированными данными. Используйте формы ниже.
+      </div>
+
       <div class="settings-grid">
 
+        <!-- Смена пароля -->
         <div class="card">
-          <div class="card-header"><h3 class="card-title">Смена пароля панели</h3></div>
+          <div class="card-header"><h3 class="card-title">🔒 Смена пароля панели</h3></div>
           <div class="card-body">
             <div id="pwdChangeAlert" class="alert hidden"></div>
             <div class="form-group">
@@ -816,20 +770,34 @@
           </div>
         </div>
 
-<!-- Смена логина — добавить ПОСЛЕ формы смены пароля -->
-<div class="page" id="settingsPage1">
-  <h3>Сменить логин</h3>
-  <div class="form-group">
-    <label>Новый логин</label>
-    <input type="text" id="newUsername" placeholder="new_login" maxlength="32" />
-  </div>
-  <div class="form-group">
-    <label>Текущий пароль (подтверждение)</label>
-    <input type="password" id="pwdForUsername" placeholder="Текущий пароль" />
-  </div>
-  <div id="usernameChangeAlert" class="alert hidden"></div>
-  <button class="btn btn-primary" onclick="changeUsername()">Сменить логин</button>
-</div>
+        <!-- Смена логина — правильно оформленная карточка -->
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">🔑 Смена логина панели</h3></div>
+          <div class="card-body">
+            <p style="color:var(--text-secondary);font-size:13px;margin:0 0 14px 0">
+              После смены логина сессия будет завершена — войдите снова с новым логином.
+            </p>
+            <div id="usernameChangeAlert" class="alert hidden"></div>
+            <div class="form-group">
+              <label class="form-label">
+                Новый логин
+                <span class="form-hint">1–32 символа: A-Z, a-z, 0-9, . _ -</span>
+              </label>
+              <input type="text" id="newUsername" class="form-input" placeholder="new_admin_login"
+                     maxlength="32" pattern="[A-Za-z0-9_.\-]+" autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Текущий пароль (подтверждение)</label>
+              <input type="password" id="pwdForUsername" class="form-input"
+                     placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-shiny" onclick="changeUsername()">Сменить логин</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Информация о панели -->
         <div class="card">
           <div class="card-header"><h3 class="card-title">Информация о панели</h3></div>
           <div class="card-body">
@@ -852,18 +820,16 @@
           </div>
         </div>
 
-        <!-- Клиенты -->
+        <!-- Клиентские приложения -->
         <div class="card settings-clients-card">
           <div class="card-header"><h3 class="card-title">Клиентские приложения</h3></div>
           <div class="card-body">
             <div class="clients-list">
-              <!-- iOS -->
               <div class="client-item">
                 <div class="client-platform ios">iOS</div>
                 <div class="client-name">Karing <span class="client-tag">Naive + Hy2</span></div>
                 <a class="client-link" href="https://apps.apple.com/app/karing/id6472431552" target="_blank">App Store ↗</a>
               </div>
-              <!-- Android -->
               <div class="client-item">
                 <div class="client-platform android">Android</div>
                 <div class="client-name">NekoBox <span class="client-tag">Naive + Hy2</span></div>
@@ -874,7 +840,6 @@
                 <div class="client-name">Karing <span class="client-tag">Naive + Hy2</span></div>
                 <a class="client-link" href="https://github.com/KaringX/karing/releases" target="_blank">GitHub ↗</a>
               </div>
-              <!-- Windows -->
               <div class="client-item">
                 <div class="client-platform windows">Windows</div>
                 <div class="client-name">Karing <span class="client-tag">Naive + Hy2</span></div>
@@ -887,15 +852,9 @@
               </div>
               <div class="client-item">
                 <div class="client-platform windows">Windows</div>
-                <div class="client-name">Hiddify <span class="client-tag">Hy2</span></div>
-                <a class="client-link" href="https://github.com/hiddify/hiddify-app/releases" target="_blank">GitHub ↗</a>
-              </div>
-              <div class="client-item">
-                <div class="client-platform windows">Windows</div>
                 <div class="client-name">v2rayN <span class="client-tag">Naive + Hy2</span></div>
                 <a class="client-link" href="https://github.com/2dust/v2rayN/releases" target="_blank">GitHub ↗</a>
               </div>
-              <!-- Linux -->
               <div class="client-item">
                 <div class="client-platform linux">Linux</div>
                 <div class="client-name">hysteria CLI <span class="client-tag">Hy2</span></div>
@@ -909,8 +868,8 @@
           </div>
         </div>
 
-      </div>
-    </div>
+      </div><!-- /settings-grid -->
+    </div><!-- /settingsPage -->
 
   </main>
 </div>
